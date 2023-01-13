@@ -1,6 +1,8 @@
 package com.example.mcqassignment;
 
 import android.os.Bundle;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -35,8 +37,16 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        binding.previousButton.setOnClickListener(view -> {
+            if ((currentPosition - 1) >= 0) {
+                changePosition(currentPosition - 1);
+            } else {
+                Toast.makeText(this, "This is the first question", Toast.LENGTH_SHORT).show();
+            }
+        });
+
         binding.optionsGroup.setOnCheckedChangeListener((radioGroup, i) -> {
-            Toast.makeText(MainActivity.this, "Selected: " + i, Toast.LENGTH_SHORT).show();
+//            Toast.makeText(MainActivity.this, "Selected: " + i, Toast.LENGTH_SHORT).show();
 
             int selectedAnswer = -1;
 
@@ -51,7 +61,7 @@ public class MainActivity extends AppCompatActivity {
             }
 
             questionsList.get(currentPosition).setAnswer(selectedAnswer);
-            Toast.makeText(this, "Selected option: " + questionsList.get(currentPosition).getAnswer(), Toast.LENGTH_SHORT).show();
+//            Toast.makeText(this, "Selected option: " + questionsList.get(currentPosition).getAnswer(), Toast.LENGTH_SHORT).show();
         });
     }
 
@@ -65,8 +75,9 @@ public class MainActivity extends AppCompatActivity {
         binding.option2.setText(question.getOption2());
         binding.option3.setText(question.getOption3());
         binding.option4.setText(question.getOption4());
-        binding.imageView.setImageDrawable(ContextCompat.getDrawable(getApplicationContext(),
-                question.getImage()));
+//        binding.imageView.setImageDrawable(ContextCompat.getDrawable(getApplicationContext(),
+//                question.getImage()));
+        imageViewAnimatedChange(question.getImage());
 
         int selectedAnswer = question.getAnswer();
         switch (selectedAnswer) {
@@ -85,6 +96,43 @@ public class MainActivity extends AppCompatActivity {
             default:
                 binding.optionsGroup.clearCheck();
         }
+
+        binding.progressBar.setMax(questionsList.size());
+        binding.progressBar.setProgress(currentPosition + 1);
+        binding.counterTv.setText((currentPosition + 1) + "/" + questionsList.size());
+
+        binding.previousButton.setAlpha(1.0f);
+        binding.nextButton.setAlpha(1.0f);
+
+        if (currentPosition == 0) {
+            binding.previousButton.setAlpha(0.5f);
+        }
+
+        if (currentPosition == (questionsList.size() - 1)) {
+            binding.nextButton.setAlpha(0.5f);
+        }
+    }
+
+    public void imageViewAnimatedChange(final int new_image) {
+        final Animation anim_out = AnimationUtils.loadAnimation(getApplicationContext(), android.R.anim.fade_out);
+        final Animation anim_in = AnimationUtils.loadAnimation(getApplicationContext(), android.R.anim.fade_in);
+
+        anim_out.setAnimationListener(new Animation.AnimationListener() {
+            @Override
+            public void onAnimationStart(Animation animation) {
+            }
+
+            @Override
+            public void onAnimationRepeat(Animation animation) {
+            }
+
+            @Override
+            public void onAnimationEnd(Animation animation) {
+                binding.imageView.setImageDrawable(ContextCompat.getDrawable(getApplicationContext(), new_image));
+                binding.imageView.startAnimation(anim_in);
+            }
+        });
+        binding.imageView.startAnimation(anim_out);
     }
 
     private void populateList() {
